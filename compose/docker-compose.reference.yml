@@ -3,7 +3,7 @@ version: "3.4"
 services:
   netmaker: # The Primary Server for running Netmaker
     container_name: netmaker
-    image: gravitl/netmaker:v0.16.2
+    image: gravitl/netmaker:v0.16.3
     cap_add: 
       - NET_ADMIN
       - NET_RAW
@@ -62,7 +62,7 @@ services:
       - traefik.http.services.netmaker-api.loadbalancer.server.port=8081
   netmaker-ui:  # The Netmaker UI Component
     container_name: netmaker-ui
-    image: gravitl/netmaker-ui:v0.16.2
+    image: gravitl/netmaker-ui:v0.16.3
     depends_on:
       - netmaker
     links:
@@ -95,7 +95,7 @@ services:
     volumes:
       - dnsconfig:/root/dnsconfig
   traefik: # the default proxy - can be replaced with caddy or nginx, but requires careful configuration
-    image: traefik:v2.6
+    image: traefik:v2.9
     container_name: traefik
     command:
       - "--certificatesresolvers.http.acme.email=YOUR_EMAIL"
@@ -116,7 +116,7 @@ services:
       - "443:443"
   mq: # the MQTT broker for netmaker
     container_name: mq
-    image: eclipse-mosquitto:2.0.11-openssl
+    image: eclipse-mosquitto:2.0.15-openssl
     depends_on:
       - netmaker
     restart: unless-stopped
@@ -129,11 +129,11 @@ services:
       - "8883"
     labels:
       - traefik.enable=true
-      - traefik.tcp.routers.mqtts.rule=HostSNI(`broker.NETMAKER_BASE_DOMAIN`)
-      - traefik.tcp.routers.mqtts.tls.passthrough=true
-      - traefik.tcp.services.mqtts-svc.loadbalancer.server.port=8883
-      - traefik.tcp.routers.mqtts.service=mqtts-svc
-      - traefik.tcp.routers.mqtts.entrypoints=websecure
+      - traefik.http.routers.mqtt_websocket.rule=Host(`broker.NETMAKER_BASE_DOMAIN`)
+      - traefik.http.routers.mqtt_websocket.entrypoints=websecure
+      - traefik.http.routers.mqtt_websocket.tls.passthrough=true
+      - traefik.http.services.mqtts-svc.loadbalancer.server.port=8883
+      - traefik.http.routers.mqtt_websocket.service=mqtts-svc
 volumes:
   traefik_certs: {} # ssl certificates - auto generated
   shared_certs: {} # netmaker certs generated for MQ comms - used by nodes/servers
