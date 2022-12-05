@@ -1,10 +1,5 @@
 name: Build go-builder images
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '00 21 * * SUN'
-
 jobs:
   go-builder:
     runs-on: ubuntu-latest
